@@ -7,16 +7,13 @@ import (
 	"time"
 )
 
-func StartServer(handlers *handlers.Handlers, port string) {
+func StartServer(handlers *handlers.Handlers, timeoutIncoming time.Duration, port string) {
 	router := NewRouter(handlers)
 
 	srv := &http.Server{
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       10 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-		Handler:           router,
-		Addr:              port,
+		WriteTimeout: timeoutIncoming * time.Second,
+		Handler:      router,
+		Addr:         port,
 	}
 
 	log.Println("Start server")

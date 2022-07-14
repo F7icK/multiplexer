@@ -55,21 +55,22 @@ func (h *Handlers) PostURL(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
 
-	urlsReq := types.UrlsRequest{}
-	if err := json.NewDecoder(r.Body).Decode(&urlsReq); err != nil {
+	jsonUrls := types.UrlsRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&jsonUrls); err != nil {
 		errorEncode(w, infrastruct.ErrorBadRequest)
 		return
 	}
 
-	cournUrl := len(urlsReq.Urls)
-	if cournUrl == 0 || cournUrl > 20 {
+	countUrl := len(jsonUrls.Urls)
+	if countUrl == 0 || countUrl > 20 {
 		errorEncode(w, infrastruct.ErrorCountUrl)
 		return
 	}
 
-	for _, urlInUrls := range urlsReq.Urls {
+	for _, urlInUrls := range jsonUrls.Urls {
 		_, err := url.ParseRequestURI(urlInUrls)
 		if err != nil {
 			errorEncode(w, infrastruct.ErrorBadJsonUrl)
@@ -77,7 +78,7 @@ func (h *Handlers) PostURL(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	outputData, err := h.service.GetUrls(ctx, urlsReq.Urls)
+	outputData, err := h.service.GetUrls(ctx, jsonUrls.Urls)
 	if err != nil {
 		errorEncode(w, err)
 		return

@@ -13,11 +13,12 @@ import (
 )
 
 type Service struct {
-	connection *types.Connection
-	client     *http.Client
+	connection      *types.Connection
+	client          *http.Client
+	limitGoRoutines int
 }
 
-func NewService(limitConnection uint32, timeoutOutgoing time.Duration) *Service {
+func NewService(limitConnection uint32, timeoutOutgoing time.Duration, limitGoRoutines int) *Service {
 
 	client := &http.Client{
 		Timeout: timeoutOutgoing * time.Second,
@@ -30,42 +31,80 @@ func NewService(limitConnection uint32, timeoutOutgoing time.Duration) *Service 
 	}
 
 	return &Service{
-		connection: conn,
-		client:     client,
+		connection:      conn,
+		client:          client,
+		limitGoRoutines: limitGoRoutines,
 	}
 }
 
 func (s *Service) GetUrls(ctx context.Context, urls []string) (*types.ResultBody, error) {
 
-	if !s.NewConnection() {
+	if !s.newConnection() {
 		return nil, infrastruct.ErrorLimitConnection
 	}
+	defer s.closeConnection()
 
+	var limitRoutines int
+	if len(urls) <= s.limitGoRoutines {
+		limitRoutines = len(urls)
+	} else {
+		limitRoutines = s.limitGoRoutines
+	}
+
+	chanUrl := make(chan string, limitRoutines)
+	chanResult := make(chan types.DataWrite, limitRoutines)
 	result := new(types.ResultBody)
-	for _, urlInUrls := range urls {
 
+	for i := 1; i <= s.limitGoRoutines && i <= len(urls); i++ {
+		go s.executorGet(ctx, chanUrl, chanResult)
+	}
+
+	for _, url := range urls {
+		chanUrl <- url
+	}
+	close(chanUrl)
+
+	for i := 1; i <= len(urls); i++ {
+
+		output := <-chanResult
+		if output.Url != "" {
+			result.Results = append(result.Results, output)
+		} else {
+			return nil, infrastruct.ErrorBadUrl
+		}
+	}
+
+	return result, nil
+}
+
+func (s *Service) executorGet(ctx context.Context, jobs <-chan string, results chan<- types.DataWrite) {
+
+	for urlInUrls := range jobs {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlInUrls, nil)
 		if err != nil {
 			log.Printf("NewRequestWithContext in GetUrls: %s", err)
-			return nil, infrastruct.ErrorBadUrl
+			close(results)
+			return
 		}
 
 		resp, err := s.client.Do(req)
 		if err != nil {
-			log.Printf("Do in GetUrls: %s", err)
-			return nil, infrastruct.ErrorBadUrl
+			log.Printf("err with Do in executorGet: %s", err)
+			close(results)
+			return
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != 200 {
-			log.Printf("StatusCode in GetUrls")
-			return nil, infrastruct.ErrorBadUrl
+			log.Printf("err with StatusCode in executorGet: StatusCode %d", resp.StatusCode)
+			close(results)
+			return
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println(err)
-			return nil, infrastruct.ErrorInternalServerError
+			log.Printf("err with ReadAll in executorGet: %s", err)
+			return
 		}
 
 		data := types.DataWrite{Url: urlInUrls}
@@ -73,14 +112,11 @@ func (s *Service) GetUrls(ctx context.Context, urls []string) (*types.ResultBody
 			data.Result = string(body)
 		}
 
-		result.Results = append(result.Results, data)
+		results <- data
 	}
-
-	s.CloseConnection()
-	return result, nil
 }
 
-func (s *Service) NewConnection() bool {
+func (s *Service) newConnection() bool {
 	s.connection.Mut.Lock()
 	defer s.connection.Mut.Unlock()
 
@@ -93,7 +129,7 @@ func (s *Service) NewConnection() bool {
 	return true
 }
 
-func (s *Service) CloseConnection() {
+func (s *Service) closeConnection() {
 	s.connection.Mut.Lock()
 	defer s.connection.Mut.Unlock()
 

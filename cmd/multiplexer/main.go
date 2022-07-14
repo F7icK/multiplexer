@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/F7icK/multiplexer/config"
 	"github.com/F7icK/multiplexer/internal/multiplexer/server"
 	"github.com/F7icK/multiplexer/internal/multiplexer/server/handlers"
 	"github.com/F7icK/multiplexer/internal/multiplexer/service"
@@ -15,7 +16,9 @@ func main() {
 	signal.Notify(signalCh, os.Interrupt)
 	defer close(signalCh)
 
-	srvce := service.NewService(100, 1)
+	cfg := config.NewConfig()
+
+	srvce := service.NewService(cfg.LimitConnection, cfg.TimeoutOutgoing, cfg.LimitGoRoutines)
 
 	endpoints := handlers.NewHandlers(srvce)
 
@@ -27,5 +30,5 @@ func main() {
 		}
 	}(signalCh)
 
-	server.StartServer(endpoints, ":8080")
+	server.StartServer(endpoints, cfg.TimeoutIncoming, ":8080")
 }
