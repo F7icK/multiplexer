@@ -8,7 +8,7 @@ import (
 func NewRouter(h *handlers.Handlers) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/post-url", h.PostURL)
+	mux.HandleFunc("/multiplexer", h.Multiplexer)
 
 	return mux
 }

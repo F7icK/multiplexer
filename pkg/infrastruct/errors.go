@@ -1,6 +1,8 @@
 package infrastruct
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type CustomError struct {
 	msg  string
@@ -20,9 +22,9 @@ func (c *CustomError) Error() string {
 
 var (
 	ErrorInternalServerError = NewError("internal server error", http.StatusInternalServerError)
+	ErrorMethodNotAllowed    = NewError("method not allowed, only POST", http.StatusMethodNotAllowed)
 	ErrorBadRequest          = NewError("bad query input", http.StatusBadRequest)
-	ErrorCountUrl            = NewError("for a correct request, you need to send from 1 to 20 URLs", http.StatusUnprocessableEntity)
+	ErrorCountUrl            = NewError("for a correct request, you need to send from 1 to 20 URLs", http.StatusRequestEntityTooLarge)
 	ErrorBadJsonUrl          = NewError("invalid input request. json must contain the URL", http.StatusBadRequest)
-	ErrorBadUrl              = NewError("bad query input. can't go to url", http.StatusBadRequest)
 	ErrorLimitConnection     = NewError("limit of received requests exceeded", http.StatusTooManyRequests)
 )

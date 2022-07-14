@@ -36,7 +36,7 @@ func errorEncode(w http.ResponseWriter, err error) {
 	r := result{Err: err.Error()}
 
 	if err = json.NewEncoder(w).Encode(r); err != nil && !errors.Is(err, syscall.EPIPE) {
-		log.Println(err)
+		log.Printf("err with Encode in errorEncode: %s", err)
 	}
 }
 
@@ -46,15 +46,13 @@ func responseEncoder(w http.ResponseWriter, res interface{}) {
 	w.WriteHeader(200)
 
 	if err := json.NewEncoder(w).Encode(res); err != nil && !errors.Is(err, syscall.EPIPE) {
-		log.Println(err)
+		log.Printf("err with Encode in responseEncoder: %s", err)
 	}
 }
 
-func (h *Handlers) PostURL(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
+func (h *Handlers) Multiplexer(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		errorEncode(w, infrastruct.ErrorMethodNotAllowed)
 		return
 	}
 
@@ -78,11 +76,12 @@ func (h *Handlers) PostURL(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	outputData, err := h.service.GetUrls(ctx, jsonUrls.Urls)
+	ctx := r.Context()
+	outputMultiplexer, err := h.service.SrvMultiplexer(ctx, jsonUrls.Urls)
 	if err != nil {
 		errorEncode(w, err)
 		return
 	}
 
-	responseEncoder(w, outputData)
+	responseEncoder(w, outputMultiplexer)
 }

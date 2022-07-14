@@ -18,9 +18,9 @@ func main() {
 
 	cfg := config.NewConfig()
 
-	srvce := service.NewService(cfg.LimitConnection, cfg.TimeoutOutgoing, cfg.LimitGoRoutines)
+	srv := service.NewService(cfg)
 
-	endpoints := handlers.NewHandlers(srvce)
+	handler := handlers.NewHandlers(srv)
 
 	go func(signalCh <-chan os.Signal) {
 		select {
@@ -30,5 +30,5 @@ func main() {
 		}
 	}(signalCh)
 
-	server.StartServer(endpoints, cfg.TimeoutIncoming, ":8080")
+	server.StartServer(handler, cfg)
 }

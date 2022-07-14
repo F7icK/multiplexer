@@ -2,21 +2,22 @@ package server
 
 import (
 	"github.com/F7icK/multiplexer/internal/multiplexer/server/handlers"
+	"github.com/F7icK/multiplexer/internal/multiplexer/types"
 	"log"
 	"net/http"
 	"time"
 )
 
-func StartServer(handlers *handlers.Handlers, timeoutIncoming time.Duration, port string) {
-	router := NewRouter(handlers)
+func StartServer(handler *handlers.Handlers, cfg *types.Config) {
+	router := NewRouter(handler)
 
 	srv := &http.Server{
-		WriteTimeout: timeoutIncoming * time.Second,
+		WriteTimeout: cfg.TimeoutIncoming * time.Second,
 		Handler:      router,
-		Addr:         port,
+		Addr:         cfg.Port,
 	}
 
-	log.Println("Start server")
+	log.Printf("Server running on port %s", cfg.Port)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}

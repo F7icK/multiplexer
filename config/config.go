@@ -1,19 +1,15 @@
 package config
 
-import "time"
+import (
+	"github.com/F7icK/multiplexer/internal/multiplexer/types"
+)
 
-type cfg struct {
-	LimitConnection uint32
-	LimitGoRoutines int
-	TimeoutOutgoing time.Duration
-	TimeoutIncoming time.Duration
-}
-
-func NewConfig() *cfg {
-	return &cfg{
+func NewConfig() *types.Config {
+	return &types.Config{
 		LimitConnection: 100,
 		LimitGoRoutines: 4,
 		TimeoutOutgoing: 1,
 		TimeoutIncoming: 10,
+		Port:            ":8080",
 	}
 }
