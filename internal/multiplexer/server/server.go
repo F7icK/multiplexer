@@ -1,11 +1,12 @@
 package server
 
 import (
-	"github.com/F7icK/multiplexer/internal/multiplexer/server/handlers"
-	"github.com/F7icK/multiplexer/internal/multiplexer/types"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/F7icK/multiplexer/internal/multiplexer/server/handlers"
+	"github.com/F7icK/multiplexer/internal/multiplexer/types"
 )
 
 func StartServer(handler *handlers.Handlers, cfg *types.Config) {

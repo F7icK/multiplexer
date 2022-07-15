@@ -1,6 +1,7 @@
 package infrastruct
 
 import (
+	"errors"
 	"net/http"
 )
 
@@ -21,10 +22,14 @@ func (c *CustomError) Error() string {
 }
 
 var (
-	ErrorInternalServerError = NewError("internal server error", http.StatusInternalServerError)
-	ErrorMethodNotAllowed    = NewError("method not allowed, only POST", http.StatusMethodNotAllowed)
-	ErrorBadRequest          = NewError("bad query input", http.StatusBadRequest)
-	ErrorCountUrl            = NewError("for a correct request, you need to send from 1 to 20 URLs", http.StatusRequestEntityTooLarge)
-	ErrorBadJsonUrl          = NewError("invalid input request. json must contain the URL", http.StatusBadRequest)
-	ErrorLimitConnection     = NewError("limit of received requests exceeded", http.StatusTooManyRequests)
+	ErrMethodNotAllowed    = NewError("method not allowed, only POST", http.StatusMethodNotAllowed)
+	ErrBadRequest          = NewError("bad query input", http.StatusBadRequest)
+	ErrCountURL            = NewError("for a correct request, you need to send from 1 to 20 URLs", http.StatusRequestEntityTooLarge)
+	ErrBadJSONURL          = NewError("invalid input request. json must contain the URL", http.StatusBadRequest)
+	ErrHTTPLimitConnection = NewError("limit of received requests exceeded", http.StatusTooManyRequests)
+	ErrValidationPort      = errors.New("bar config, port contains errors")
+	ErrLimitGoRoutines     = errors.New("bar config, LimitGoRoutines cannot be less than 1")
+	ErrLimitConnection     = errors.New("bar config, LimitConnection cannot be less than 1")
+	ErrTimeoutIncoming     = errors.New("bar config, TimeoutIncoming cannot be less than 1")
+	ErrTimeoutOutgoing     = errors.New("bar config, TimeoutOutgoing cannot be less than 1")
 )

@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-type UrlsRequest struct {
-	Urls []string `json:"urls"`
+type URLsRequest struct {
+	URLs []string `json:"urls"`
 }
 
 type ResultBody struct {
@@ -14,14 +14,14 @@ type ResultBody struct {
 }
 
 type DataWrite struct {
-	Url    string      `json:"url"`
+	URL    string      `json:"url"`
 	Result interface{} `json:"result"`
 }
 
 type DataWriteChan struct {
-	Url    string
-	Result interface{}
-	Error  error
+	URL    string      `json:"url"`
+	Result interface{} `json:"result"`
+	Err    error       `json:"err"`
 }
 
 type Connection struct {
@@ -31,9 +31,9 @@ type Connection struct {
 }
 
 type Config struct {
-	LimitConnection uint32
-	LimitGoRoutines int
-	TimeoutOutgoing time.Duration
-	TimeoutIncoming time.Duration
-	Port            string
+	LimitConnection uint32        `json:"limit_connection"`
+	LimitGoRoutines int           `json:"limit_go_routines"`
+	TimeoutOutgoing time.Duration `json:"timeout_outgoing"`
+	TimeoutIncoming time.Duration `json:"timeout_incoming"`
+	Port            string        `json:"port"`
 }

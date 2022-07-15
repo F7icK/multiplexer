@@ -1,0 +1,6 @@
+version: "2.6.1"
+services:
+  go-task-multiplexer:
+    build: ./
+    ports:
+      - '8081:8081'

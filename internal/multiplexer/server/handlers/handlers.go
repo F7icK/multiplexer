@@ -3,13 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"github.com/F7icK/multiplexer/internal/multiplexer/service"
-	"github.com/F7icK/multiplexer/internal/multiplexer/types"
-	"github.com/F7icK/multiplexer/pkg/infrastruct"
 	"log"
 	"net/http"
 	"net/url"
 	"syscall"
+
+	"github.com/F7icK/multiplexer/internal/multiplexer/service"
+	"github.com/F7icK/multiplexer/internal/multiplexer/types"
+	"github.com/F7icK/multiplexer/pkg/infrastruct"
 )
 
 type Handlers struct {
@@ -41,7 +42,6 @@ func errorEncode(w http.ResponseWriter, err error) {
 }
 
 func responseEncoder(w http.ResponseWriter, res interface{}) {
-
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 
@@ -52,32 +52,32 @@ func responseEncoder(w http.ResponseWriter, res interface{}) {
 
 func (h *Handlers) Multiplexer(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		errorEncode(w, infrastruct.ErrorMethodNotAllowed)
+		errorEncode(w, infrastruct.ErrMethodNotAllowed)
 		return
 	}
 
-	jsonUrls := types.UrlsRequest{}
-	if err := json.NewDecoder(r.Body).Decode(&jsonUrls); err != nil {
-		errorEncode(w, infrastruct.ErrorBadRequest)
+	arrURLs := types.URLsRequest{URLs: nil}
+	if err := json.NewDecoder(r.Body).Decode(&arrURLs); err != nil {
+		errorEncode(w, infrastruct.ErrBadRequest)
 		return
 	}
 
-	countUrl := len(jsonUrls.Urls)
-	if countUrl == 0 || countUrl > 20 {
-		errorEncode(w, infrastruct.ErrorCountUrl)
+	countURL := len(arrURLs.URLs)
+	if countURL == 0 || countURL > 20 {
+		errorEncode(w, infrastruct.ErrCountURL)
 		return
 	}
 
-	for _, urlInUrls := range jsonUrls.Urls {
+	for _, urlInUrls := range arrURLs.URLs {
 		_, err := url.ParseRequestURI(urlInUrls)
 		if err != nil {
-			errorEncode(w, infrastruct.ErrorBadJsonUrl)
+			errorEncode(w, infrastruct.ErrBadJSONURL)
 			return
 		}
 	}
 
 	ctx := r.Context()
-	outputMultiplexer, err := h.service.SrvMultiplexer(ctx, jsonUrls.Urls)
+	outputMultiplexer, err := h.service.SrvMultiplexer(ctx, arrURLs.URLs)
 	if err != nil {
 		errorEncode(w, err)
 		return

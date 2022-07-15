@@ -10,6 +10,6 @@ func NewConfig() *types.Config {
 		LimitGoRoutines: 4,
 		TimeoutOutgoing: 1,
 		TimeoutIncoming: 10,
-		Port:            ":8080",
+		Port:            ":8081",
 	}
 }

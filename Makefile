@@ -2,6 +2,8 @@
 build:
 	go build -v ./cmd/multiplexer
 
-run: build
+run: lint build
 	./multiplexer
 
+lint:
+	golangci-lint run -c ./golangci.yml ./...

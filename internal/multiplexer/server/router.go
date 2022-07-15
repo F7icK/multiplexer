@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/F7icK/multiplexer/internal/multiplexer/server/handlers"
 	"net/http"
+
+	"github.com/F7icK/multiplexer/internal/multiplexer/server/handlers"
 )
 
 func NewRouter(h *handlers.Handlers) *http.ServeMux {
